@@ -87,3 +87,15 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+./data
+
+
+*.csv
+lda/output/20news-test-7532.orig.txt
+
+lda/output/20news-test-7532.svm-lda.txt
+
+lda/output/20news-train-11314.orig.txt
+
+lda/output/20news-train-11314.svm-lda.txt
