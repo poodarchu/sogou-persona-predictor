@@ -1,2 +1,2 @@
 # SougouPersona
-the CCF Data Foundation Competition.
+the CCF Data Foundation Competition: Sogou
