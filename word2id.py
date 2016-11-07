@@ -26,7 +26,7 @@ corpus = []
 
 def transfer():
 
-    for line in codecs.open('tkd_qry_all.csv', 'r', 'utf-8').readlines():
+    for line in codecs.open('./output/tkd_qry_all.csv', 'r', 'utf-8').readlines():
         # print(line)
         words = line.split(',')
         corpus.append(words)
@@ -56,7 +56,7 @@ def transfer():
     print("Using vocabulary size %d." % vocabulary_size)
     print("The least frequent word in our vocabulary is '%s' and appeared %d times." % (vocabulary[-1][0], vocabulary[-1][1]))
 
-    fw = codecs.open('term_idx_all.csv', 'w', 'utf-8')
+    fw = codecs.open('./output/term_idx_all.csv', 'w', 'utf-8')
     for line in corpus:
         for word in line:
             idx = word2index[word]

@@ -17,31 +17,30 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 train_data = []
 
 def train():
-    for line in codecs.open('./data/train.csv', 'r', 'utf-8').readlines():
-        words = line.split('\t')
-        train_data.append(words[4:])
+    for line in codecs.open('./output/tkd_qry_all.csv', 'r', 'utf-8').readlines():
+        words = line.strip().split(',')
+        train_data.append(words)
 
-    stopwords = codecs.open('./data/stop_tokens.txt', 'r', encoding='utf8').readlines()
-    stopwords = [w.strip() for w in stopwords]
+    # stopwords = codecs.open('./data/stop_tokens.txt', 'r', encoding='utf8').readlines()
+    # stopwords = [w.strip() for w in stopwords]
 
-    train_set = []
-    for line in train_data:
-        for query in line:
-            qs = list(jieba.cut(query))
-            final = ''
-            # for q in qs:
-            #     if q not in stop_tokens:
-            #         final += (seg + ',')
-            # fw.write(final)
-            train_set.append([w for w in qs if w not in stopwords])
+    # train_set = []
+    # for line in train_data:
+    #     for query in line:
+    #         qs = list(jieba.cut(query))
+    #         final = ''
+    #         # for q in qs:
+    #         #     if q not in stop_tokens:
+    #         #         final += (seg + ',')
+    #         # fw.write(final)
+    #         train_set.append([w for w in qs if w not in stopwords])
 
-    vocabulary = Dictionary(train_set)
-    corpus = [ vocabulary.doc2bow(text) for text in train_set]
-
+    vocabulary = Dictionary(train_data)
+    corpus = [ vocabulary.doc2bow(text) for text in train_data]
 
     print('Training LDA ... ')
     startTime = time.time()
-    lda = ldamodel.LdaModel(corpus=corpus, id2word=vocabulary, num_topics=100, passes=2)
+    lda = ldamodel.LdaModel(corpus=corpus, id2word=vocabulary, num_topics=100, passes=10)
     endTime = time.time()
     print("Finished in %.1f seconds" %(endTime - startTime))
     print(lda.top_topics(100))

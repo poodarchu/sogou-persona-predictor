@@ -35,4 +35,4 @@ def randomResult(inputFilePath, outputFilePath):
     fw.close()
 
 if __name__ == '__main__':
-    randomResult('./data/test.csv', 'randomResult.csv')
+    randomResult('./data/test.csv', './output/randomResult.csv')

@@ -1,20 +1,10 @@
 # -*- coding=utf-8 -*-
 
-# from __future__ import unicode_literals
-
-import nltk
-
-import sys
-sys.path.append('.')
-
-import re
 import codecs
-import os
-import shutil
-
 import jieba
 import jieba.posseg
 import jieba.analyse
+import re
 
 userList = []
 userTag = []
@@ -43,22 +33,26 @@ def chnTokeninzer(filePath):
     print('-------我是华丽的分割线----------')
 
     stop_tokens = []
-    fr = codecs.open('./data/stop_tokens.txt', 'r', 'utf-8')
+    fr = codecs.open('./data/stop_tokens.txt', 'rb', 'utf-8')
     for token in fr.readlines():
-        stop_tokens.append(token)
+        stop_tokens.append(token.strip())
     fr.close()
-    stop_tokens = {}.fromkeys(stop_tokens)
+    # stop_tokens = {}.fromkeys(stop_tokens)
+    # for k in stop_tokens[100:110]:
+    #     print(k)
 
-    with codecs.open('tkd_qry_all.csv', 'w', 'utf-8') as fw:
+    with codecs.open('./output/tkd_qry_all.csv', 'w', 'utf-8') as fw:
         for queryList in queryLists:
             for query in queryList:
-                seg_qry = jieba.lcut(query, cut_all=False)
+                seg_qry = jieba.cut(query, cut_all=False)
                 final = ''
                 for seg in seg_qry:
                         if seg not in stop_tokens:
                             final += (seg + ',')
+                # if seg_qry[-1] not in stop_tokens:
+                #     final += seg_qry[-1]
                 fw.write(final)
-            fw.write('\n')
+            # fw.write('\n')
         fw.close()
 
 

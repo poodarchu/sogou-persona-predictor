@@ -29,14 +29,14 @@ def splitUserAndQuery(filePath):
         userList.append(listPerLine[0:4])
         queryList.append(listPerLine[4:])
 
-    f = open('userList.csv', 'w')
+    f = open('./output/userList.csv', 'w')
     for user in userList:
         for item in user:
             f.write(item + '\t')
         f.write('\n')
     f.close()
 
-    fq = open('queryList.csv', 'w')
+    fq = open('./output/queryList.csv', 'w')
     for query in queryList:
         for item in query:
             item = item.encode('utf-8')
@@ -70,8 +70,8 @@ def splitTrainSet(inputFilePath):
     queryList = fr.readlines()
     random.shuffle(queryList)
 
-    fw1 = open('test_s.csv', 'w')
-    fw2 = open('train_s.csv', 'w')
+    fw1 = open('./output/test_s.csv', 'w')
+    fw2 = open('./output/train_s.csv', 'w')
 
     lenth = len(queryList)
     for line in queryList[:int(lenth*0.2)]:
