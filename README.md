@@ -36,5 +36,9 @@ The above process will produce a qualified baseline, which means we can tune the
 3. to be continued ...
 
 
+Another way to try:
+ 
+ **Word2Vec**
+
 
 
