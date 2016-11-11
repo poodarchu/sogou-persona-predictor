@@ -1,125 +1,130 @@
-# -*- coding=utf-8 -*-
+# -*- coding=GBK -*-
 
-import gensim
-import time
-from corpusLoader import *
+
 import sys
+import pdb
+import os
+import getopt
+import time
+import gensim
+from sklearn.datasets import load_svmlight_file
+from scipy.sparse import csr_matrix
+from corpusLoader import *
 
-# ä»è¯­æ–™åº“åæ˜ å°„åˆ°åŠ è½½å‡½æ•°ï¼Œä¹‹åè°ƒç”¨
-corpus2loader = { '20news' : load_20news, 'reuters' : load_reuters }
+# ´ÓÓïÁÏ¿âÃûÓ³Éäµ½¼ÓÔØº¯Êı£¬Ö®ºóµ÷ÓÃ
+corpus2loader = { '20news': load_20news, 'reuters': load_reuters }
 
 def usage():
-    print "Usage: ldaExp.py corpus_name"
+    print """Usage: ldaExp.py corpus_name"""
 
 corpusName = sys.argv[1]
-
-#åŠ è½½å‡½æ•°
+# ¼ÓÔØº¯Êı
 loader = corpus2loader[corpusName]
 
-# 20news çš„æ–‡æ¡£æ•°å’Œç±»åˆ«æ•°éƒ½å¤šäº›ï¼Œæ‰€ä»¥ä¸»é¢˜æ•°è®¾ç½®å¤§ä¸€äº›
-if corpusName == '20news':
+# 20newsµÄÎÄµµÊıºÍÀà±ğÊı¶¼¶àĞ©£¬ËùÒÔÖ÷ÌâÊıÉè´óÒ»Ğ©
+if corpusName == "20news":
     topicNum = 100
 else:
     topicNum = 50
 
-# ä¸¤ä¸ªè¯­æ–™åº“éƒ½å·²ç»åˆ†æˆ train å’Œ test é›†åˆã€‚åé¢åˆ†åˆ«å¤„ç†
-setNames = ['train', 'test']
-baseNames = []
-subCorpora = []
+# Á½¸öÓïÁÏ¶¼ÒÑ·Ö³ÉtrainºÍtest¼¯ºÏ¡£ºóÃæ·Ö±ğ´¦Àí
+setNames = [ 'train', 'test' ]
+basenames = []
+subcorpora = []
 corpus = []
 word2id = {}
 id2word = {}
 maxWID = 0
 
 for setName in setNames:
-    print "Process set '%s': " %setName
-
-    # åŠ è½½è¯­æ–™åº“çš„trainæˆ–è€…testå­é›†ï¼Œå•è¯ä»¥å¥å­ä¸ºå•ä½æ”¾å…¥ origi_docs_words,ç±»åˆ«æ”¾åœ¨ orig_docs_cat
-    setDocNum, orig_docs_words, orig_docs_cat, cats_docsWords, cats_docNames, category_names = loader(setName)
-    #æ–‡ä»¶åå‰ç¼€
-    baseName = "%s-%s-%d" %( corpusName, setName, setDocNum)
-    baseNames.append(baseName)
-
-    # å½“å‰å¾ªç¯æ‰€å¤„ç†çš„è¯­æ–™å­é›†ï¼Œæ˜¯ä¸€ä¸ªlistçš„listã€‚æ¯ä¸ªå¤–å±‚listå…ƒç´ å¯¹åº”ä¸€ä¸ªæ–‡æ¡£
-    # æ¯ä¸ªå†…å±‚listä¸ºä¸€ä¸² (word_id, frequency) çš„pair
-    # è¿™æ˜¯ gensim çš„æ ‡å‡†è¾“å…¥æ ¼å¼
+    print "Process set '%s':" %setName
+    
+    # ¼ÓÔØÓïÁÏµÄtrain»òtest×Ó¼¯£¬µ¥´ÊÒÔ¾ä×ÓÎªµ¥Î»·ÅÈë orig_docs_words£¬Àà±È·ÅÔÚ orig_docs_cat
+    setDocNum, orig_docs_words, orig_docs_name, orig_docs_cat, cats_docsWords, \
+            cats_docNames, category_names = loader(setName)
+    # ÎÄ¼şÃûÇ°×º
+    basename = "%s-%s-%d" %( corpusName, setName, setDocNum )
+    basenames.append(basename)
+    
+    # µ±Ç°Ñ­»·Ëù´¦ÀíµÄÓïÁÏ×Ó¼¯£¬ÊÇÒ»¸ölistµÄlist¡£Ã¿¸öÍâ²ãlistÔªËØ¶ÔÓ¦Ò»¸öÎÄµµ
+    # Ã¿¸öÄÚ²ãlistÎªÒ»´® (word_id, frequency) µÄpair
+    # ÕâÖÖ¸ñÊ½ÊÇgensimµÄ±ê×¼ÊäÈë¸ñÊ½
     subcorpus = []
+    
+    # ±£´æÔ­Ê¼ÎÄ±¾£¬ÒÔ¹©ÈË²é¿´
+    orig_filename = "%s.orig.txt" %basename
+    ORIG = open( orig_filename, "w" )
 
-    # ä¿å­˜åŸå§‹æ–‡æœ¬ï¼Œä»¥ä¾›äººæŸ¥çœ‹
-    orig_filename = "./output/%s.orig.txt" %baseName
-    ORIG = open(orig_filename, 'w')
-
-    # æ¯ä¸ª wordsInSentences å¯¹åº”ä¸€ä¸ªæ–‡æ¡£
-    # æ¯ä¸ª wordsInSentences ç”±è®¸å¤šå¥å­ç»„æˆï¼Œæ¯ä¸ªå¥å­æ˜¯ä¸€ä¸ª list of words
+    # Ã¿¸ö wordsInSentences ¶ÔÓ¦Ò»¸öÎÄµµ
+    # Ã¿¸ö wordsInSentences ÓÉĞí¶à¾ä×Ó×é³É£¬Ã¿¸ö¾ä×ÓÊÇÒ»¸ölist of words
     for wordsInSentences in orig_docs_words:
-        # ç»Ÿè®¡å½“å‰æ¯ä¸ªè¯çš„é¢‘ç‡
+        # Í³¼Æµ±Ç°ÎÄµµµÄÃ¿¸ö´ÊµÄÆµÂÊ
         doc_wid2freq = {}
-        # å¾ªç¯è¯»å–å½“å‰æ–‡æ¡£çš„æ¯ä¸ªè¯çš„é¢‘ç‡
+        # Ñ­»·È¡µ±Ç°ÎÄµµµÄÒ»¸ö¾ä×Ó
         for sentence in wordsInSentences:
             for w in sentence:
                 w = w.lower()
-                ORIG.write("%s" %w)
-
-                # å¦‚æœwå·²ç»åœ¨word2idæ˜ å°„è¡¨ä¸­ï¼Œæ˜ å°„æˆwid
+                ORIG.write( "%s " %w )
+                
+                # Èç¹ûwÒÑÔÚword2idÓ³Éä±íÖĞ£¬Ó³Éä³Éwid
                 if w in word2id:
                     wid = word2id[w]
+                # ·ñÔò£¬°Ñw¼ÓÈëÓ³Éä±í£¬²¢Ó³Éä³ÉĞÂwid
                 else:
                     wid = maxWID
                     word2id[w] = maxWID
-                    id2word[wid] = w
+                    id2word[maxWID] = w
                     maxWID += 1
-
-                # ç»Ÿè®¡ wid çš„é¢‘ç‡
+                
+                # Í³¼Æ wid µÄÆµÂÊ
                 if wid in doc_wid2freq:
                     doc_wid2freq[wid] += 1
                 else:
                     doc_wid2freq[wid] = 1
-
-        ORIG.write('\n')
-        # å°†æ–‡æ¡£ä¸­å‡ºç°çš„ wid æŒ‰ id å¤§å°æ’åº
-        sorted_wids = sorted(doc_wid2freq.keys())
+                    
+        ORIG.write("\n")
+        # °ÑÎÄµµÖĞ³öÏÖµÄwid°´id´óĞ¡ÅÅĞò
+        sorted_wids = sorted( doc_wid2freq.keys() )
         doc_pairs = []
-        # æŠŠ(wid, frequency) çš„pair è¿½åŠ åˆ°å½“å‰æ–‡æ¡£çš„listä¸­
+        # °Ñ (wid, frequency) µÄ¶Ô×·¼Óµ½µ±Ç°ÎÄµµµÄlistÖĞ
         for wid in sorted_wids:
             doc_pairs.append( (wid, doc_wid2freq[wid]) )
-
-        # å½“å‰æ–‡æ¡£çš„ list å·²ç»å®Œå…¨ç”Ÿæˆï¼ŒæŠŠå®ƒåŠ å…¥ subcorpusï¼Œå³è¯­æ–™é›†çš„listä¸­
+        
+        # µ±Ç°ÎÄµµµÄlistÒÑ¾­ÍêÈ«Éú³É£¬°ÑËü¼ÓÈësubcorpus£¬¼´ÓïÁÏ×Ó¼¯µÄlistÖĞ    
         subcorpus.append(doc_pairs)
 
     ORIG.close()
-    print "%d original docs saced in %s" %( setDocNum, orig_filename )
+    print "%d original docs saved in '%s'" %( setDocNum, orig_filename )
 
-    # æŠŠæ•´ä¸ªè¯­æ–™å­é›†listä¸ä¹‹å‰çš„liståˆå¹¶ï¼Œå¾—åˆ°ä¸€ä¸ªåŒ…å«trainå’Œtesté›†åˆçš„æ‰€æœ‰æ–‡æ¡£é›†åˆ
+    # °ÑÕû¸öÓïÁÏ×Ó¼¯listÓëÖ®Ç°µÄlistºÏ²¢£¬µÃµ½Ò»¸ö°üº¬trainºÍtest¼¯ºÏµÄËùÓĞÎÄµµµÄ¼¯ºÏ
     corpus += subcorpus
-    # è¿™é‡ŒæŠŠ train å’Œ test é›†åˆåˆ†å¼€æ”¾ï¼Œ ä¹‹åä¼šæŠŠ ä¸åŒé›†åˆçš„ æ¯ä¸ªæ–‡æ¡£çš„ "doc-topicæ¯”ä¾‹" ä¿å­˜æˆä¸åŒçš„æ–‡ä»¶
-    subCorpora.append( (subcorpus, orig_docs_cat) )
-
+    # ÕâÀï°ÑtrainºÍtest¼¯ºÏ·Ö¿ª·Å£¬Ö®ºó»á°Ñ²»Í¬¼¯ºÏµÄÃ¿¸öÎÄµµµÄ¡°doc-topic±ÈÀı¡±±£´æ³É²»Í¬ÎÄ¼ş
+    subcorpora.append( (subcorpus, orig_docs_cat) )
+    
 print "Training LDA..."
-stratTime = time.time()
-# LDA è®­ç»ƒçš„æ—¶å€™æ˜¯æŠŠtrainå’Œtestæ”¾åœ¨ä¸€èµ·è®­ç»ƒçš„ï¼Œæ›´ä¸¥æ ¼çš„åŠæ³•æ˜¯åªç”¨trainé›†åˆæ¥è®­ç»ƒ
+startTime = time.time()
+# LDAÑµÁ·µÄÊ±ºòÊÇ°ÑtrainºÍtest·ÅÒ»ÆğÑµÁ·µÄ(¸üÑÏ¸ñµÄ°ì·¨Ó¦¸ÃÊÇÖ»ÓÃtrain¼¯ºÏÀ´ÑµÁ·)
 lda = gensim.models.ldamodel.LdaModel( corpus=corpus, num_topics=topicNum, passes=20 )
-endtime = time.time()
-print "Finished in %.1f seconds" %(endtime - stratTime)
+endTime = time.time()
+print "Finished in %.1f seconds" %( endTime - startTime )
 
 for i in xrange(2):
-    lda_fileName = "./output/%s.svm-lda.txt" %baseNames[i]
-    LDA = open( lda_fileName, 'w')
-    print "Saving topic proportions into '%s' ... " %lda_fileName
+    lda_filename = "%s.svm-lda.txt" %basenames[i]
+    LDA = open( lda_filename, "w" )
+    print "Saving topic proportions into '%s'..." %lda_filename
+    
+    # ÄÃ³öÒ»¸öÓïÁÏ×Ó¼¯ (train»òÕßtest)
+    subcorpus, labels = subcorpora[i]
 
-    # æ‹¿å‡ºä¸€ä¸ªè¯­æ–™å­é›†ï¼ˆtrain æˆ–è€… testï¼‰
-    subcorpus, labels = subCorpora[i]
-
-    # éå†å­é›†ä¸­çš„æ¯ä¸ªæ–‡æ¡£
+    # ±éÀú×Ó¼¯ÖĞÃ¿¸öÎÄµµ
     for d, doc_pairs in enumerate(subcorpus):
         label = labels[d]
-        # å°†å½“å‰æ–‡æ¡£ä½œä¸ºè¾“å…¥ï¼Œç”¨è®­ç»ƒå¥½çš„LDAæ¨¡å‹æ±‚ doc-topic çš„æ¯”ä¾‹
+        # °Ñµ±Ç°ÎÄµµ×÷ÎªÊäÈë£¬ÓÃÑµÁ·ºÃµÄLDAÄ£ĞÍÇó¡°doc-topic±ÈÀı¡±
         topic_props = lda.get_document_topics( doc_pairs, minimum_probability=0.001 )
-        LDA.write( "%d" %label)
-        # æŠŠkä¸ªæ¯”ä¾‹ä¿å­˜æˆkä¸ªç‰¹å¾ svmlightæ ¼å¼
+        LDA.write( "%d" %label )
+        # °ÑK¸ö±ÈÀı±£´æ³ÉK¸öÌØÕ÷£¬svmlight¸ñÊ½
         for k, prop in topic_props:
-            LDA.write(" %d:%.3f" %(k, prop))
-        LDA.write('\n')
+            LDA.write(" %d:%.3f" %(k, prop) )
+        LDA.write("\n")
     LDA.close()
     print "%d docs saved" %len(subcorpus)
-
-

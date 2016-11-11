@@ -1,4 +1,4 @@
-# -*- coding=utf-8 -*-
+# -*- coding=GBK -*-
 
 from sklearn.datasets import fetch_20newsgroups
 from nltk.corpus import reuters
@@ -9,13 +9,13 @@ import unicodedata
 import re
 import pdb
 
-unicode_punc_tbl = dict.fromkeys( i for i in xrange(128, sys.maxunicode)
-                      if unicodedata.category(unichr(i)).startswith('P') )
+unicode_punc_tbl = dict.fromkeys( i for i in xrange(128, sys.maxunicode) if unicodedata.category(unichr(i)).startswith('P') )
+# print unicode_punc_tbl
 
-# è¾“å…¥: ä¸€ä¸ªæ–‡æ¡£
-# å¤„ç†è¿‡ç¨‹: å…ˆæŒ‰æ ‡ç‚¹ç¬¦å·åˆ†æˆå¥å­ï¼Œç„¶åæ¯å¥æŒ‰è¯è¾¹ç•Œåˆ†è¯
+# ÊäÈë: Ò»¸öÎÄµµ
+# ´¦Àí¹ı³Ì: ÏÈ°´±êµã·ûºÅ·Ö³É¾ä×Ó£¬È»ºóÃ¿¾ä°´´Ê±ß½ç·Ö´Ê
 def extractSentenceWords(doc, remove_url=True, remove_punc="utf-8", min_length=1):
-    # å»æ‰æŒ‡å®šå­—ç¬¦é›†(ç¼ºçœå»æ‰utf-8çš„)ä¸­çš„æ ‡ç‚¹ç¬¦å·
+    # È¥µôÖ¸¶¨×Ö·û¼¯(È±Ê¡È¥µôutf-8µÄ)ÖĞµÄ±êµã·ûºÅ
     if remove_punc:
         # ensure doc_u is in unicode
         if not isinstance(doc, unicode):
@@ -23,20 +23,20 @@ def extractSentenceWords(doc, remove_url=True, remove_punc="utf-8", min_length=1
             doc_u = doc.decode(encoding)
         else:
             doc_u = doc
-        # remove unicode punctuation marks, keep ascii punctuation marks
+        # remove unicode punctuation marks, keep ascii punctuation marks(replace corresponding symbols with None)
         doc_u = doc_u.translate(unicode_punc_tbl)
         if not isinstance(doc, unicode):
             doc = doc_u.encode(encoding)
         else:
             doc = doc_u
 
-    # å»æ‰æ–‡æœ¬ä¸­çš„URL(å¯é€‰)
+    # È¥µôÎÄ±¾ÖĞµÄURL(¿ÉÑ¡)
     if remove_url:
         re_url = r"(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)"
         doc = re.sub( re_url, "", doc )
 
-    # æŒ‰å¥å­æ ‡ç‚¹åˆ†å¥
-    sentences = re.split( r"\s*[,;:`\"()?!{}]\s*|--+|\s*-\s+|''|\.\s|\.$|\.\.+|â€œ|â€", doc ) #"
+    # °´¾ä×Ó±êµã·Ö¾ä
+    sentences = re.split( r"\s*[,;:`\"()?!{}]\s*|--+|\s*-\s+|''|\.\s|\.$|\.\.+|¡°|¡±", doc ) #"
     wc = 0
     wordsInSentences = []
 
@@ -47,7 +47,7 @@ def extractSentenceWords(doc, remove_url=True, remove_punc="utf-8", min_length=1
         if not re.search( "[A-Za-z0-9]", sentence ):
             continue
 
-        # æŒ‰è¯è¾¹ç•Œåˆ†è¯
+        # °´´Ê±ß½ç·Ö´Ê
         words = re.split( r"\s+\+|^\+|\+?[\-*\/&%=<>\[\]~\|\@\$]+\+?|\'\s+|\'s\s+|\'s$|\s+\'|^\'|\'$|\$|\\|\s+", sentence )
 
         words = filter( lambda w: w, words )
@@ -121,10 +121,10 @@ def load_reuters(setName):
             cat = reuters.categories(doc_id)[0]
             cand_docNum += 1
 
-            # ä»¥'train'å¼€å¤´çš„æ–‡æ¡£åæ”¾åœ¨trainingé›†åˆé‡Œ
+            # ÒÔ'train'¿ªÍ·µÄÎÄµµÃû·ÅÔÚtraining¼¯ºÏÀï
             if doc_id.startswith("train"):
                 cat2set_ids = cat2train_ids
-            # å¦åˆ™ï¼Œæ”¾åˆ°testé›†åˆ
+            # ·ñÔò£¬·Åµ½test¼¯ºÏ
             else:
                 cat2set_ids = cat2test_ids
 
@@ -214,3 +214,4 @@ def load_reuters(setName):
     print "Done. %d docs read, %d empty docs skipped. Totally %d lines" %(readDocNum, emptyFileNum, totalLineNum)
     return setDocNum, orig_docs_words, orig_docs_name, orig_docs_cat, \
                 cats_docsWords, cats_docNames, topN_cats
+    

@@ -111,3 +111,5 @@ output/lda_example_output.txt
 data/output/lda.model.state
 
 output/lda_example_output.txt
+
+*.txt
