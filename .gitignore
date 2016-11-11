@@ -99,3 +99,15 @@ lda/output/20news-test-7532.svm-lda.txt
 lda/output/20news-train-11314.orig.txt
 
 lda/output/20news-train-11314.svm-lda.txt
+
+data/output/lda.model
+
+data/output/lda.txt
+
+data/output/train.orig.txt
+
+output/lda_example_output.txt
+
+data/output/lda.model.state
+
+output/lda_example_output.txt
