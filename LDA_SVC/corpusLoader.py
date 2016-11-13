@@ -2,6 +2,7 @@
 
 import codecs
 import jieba
+import corenlp
 
 userID = []
 # userTags = [] # userTag[i][0:3] : user i's three tags gender, age and certification
@@ -70,7 +71,11 @@ def cut2rtn():
     # print queryLists[8][8]
     # print len(queryList[8])
 
-    return userID, ages, genders, educations, queryLists
+    # Split  train set to train and validation set.
+    trainQueryLists = queryLists[:16000]
+    validationQueryLists = queryLists[16000:]
+
+    return userID, ages, genders, educations, trainQueryLists, validationQueryLists
 
 def cutTest2Rtn():
     fw = codecs.open('./data/output/test.csv', 'w', 'utf-8')
@@ -92,7 +97,6 @@ def cutTest2Rtn():
         testQueryLists.append(queries)
 
     return testUIDs, testQueryLists
-
 
 if __name__ == '__main__':
     cut2rtn()
