@@ -20,6 +20,13 @@ with codecs.open('./data/train.csv', 'r', 'utf-8') as fr:
         educations.append(userInfo[3])
         userQueries.append(userInfo[4:])
     fr.close()
+with codecs.open('./data/test.csv', 'r', 'utf-8') as frt:
+    for testUser in frt.readlines():
+        userInfo = testUser.split('\t')
+        userID.append(user[0])
+        userQueries.append(userInfo[1:])
+    frt.close()
+
 
 stop_tokens = []
 fr = codecs.open('./data/stop_tokens.txt', 'r', 'utf-8')
@@ -49,33 +56,11 @@ def cut2rtn():
         fw.write('\n')
         queryLists.append(queryList)
 
-    # for i in ages:
-    #     fw_ages.write(i)
-    #     fw_ages.write('\n')
-    # for i in genders:
-    #     fw_genders.write(i)
-    #     fw_genders.write('\n')
-    # for i in educations:
-    #     fw_educations.write(i)
-    #     fw_educations.write('\n')
-    #
-    # fw.close()
-    # fw_ages.close()
-    # fw_genders.close()
-    # fw_educations.close()
-    #
-    # print userID[8]
-    # print ages[8]
-    # print genders[8]
-    # print educations[8]
-    # print queryLists[8][8]
-    # print len(queryList[8])
-
     # Split  train set to train and validation set.
-    trainQueryLists = queryLists[:16000]
-    validationQueryLists = queryLists[16000:]
+    trainQueryLists = queryLists[:20000]
+    testQueryLists = queryLists[20000:]
 
-    return userID, ages, genders, educations, trainQueryLists, validationQueryLists
+    return userID, ages, genders, educations, trainQueryLists, testQueryLists
 
 def cutTest2Rtn():
     fw = codecs.open('./data/output/test.csv', 'w', 'utf-8')
@@ -100,4 +85,4 @@ def cutTest2Rtn():
 
 if __name__ == '__main__':
     cut2rtn()
-    cutTest2Rtn()
+    # cutTest2Rtn()

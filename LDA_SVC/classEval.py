@@ -3,7 +3,6 @@
 from sklearn import svm, metrics
 from sklearn.datasets import load_svmlight_file
 import sys
-from sklearn.multiclass import  OneVsRestClassifier
 
 # 返回precision, recall, f1, accuracy
 def getScores(true_classes, pred_classes, average):
@@ -14,7 +13,7 @@ def getScores(true_classes, pred_classes, average):
     return precision, recall, f1, accuracy
 
 train_file = "train.svm-lda.txt"
-test_file = "validation.svm-lda.txt"
+# test_file = "validation.svm-lda.txt"
 
 # 加载training和test文件的特征
 train_features_sparse, true_train_classes = load_svmlight_file(train_file)
