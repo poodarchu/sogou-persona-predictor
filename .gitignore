@@ -88,28 +88,40 @@ ENV/
 # Rope project settings
 .ropeproject
 
-./data
+*.pyc
 
+data/output/0_predict.csv
 
-*.csv
-lda/output/20news-test-7532.orig.txt
+data/output/1_predict.csv
 
-lda/output/20news-test-7532.svm-lda.txt
+data/output/2_predict.csv
 
-lda/output/20news-train-11314.orig.txt
+data/output/age_predict.csv
 
-lda/output/20news-train-11314.svm-lda.txt
+data/output/ages.csv
 
-data/output/lda.model
+data/output/educations.csv
 
-data/output/lda.txt
+data/output/genders.csv
 
-data/output/train.orig.txt
+data/output/queries_tokenized.csv
 
-output/lda_example_output.txt
+data/output/UID_age.csv
 
-data/output/lda.model.state
+data/output/test.csv
 
-output/lda_example_output.txt
+test.svm-lda-0.txt
 
-*.txt
+test.svm-lda-2.txt
+
+test.svm-lda-1.txt
+
+test.svm-lda.txt
+
+train.svm-lda-0.txt
+
+train.svm-lda-1.txt
+
+train.svm-lda-2.txt
+
+train.svm-lda.txt
