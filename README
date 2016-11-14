@@ -1,0 +1,5 @@
+Usage:
+1. python ldaExp.py
+2. python cut_svm_file.py
+3. python classEval.py
+4. python outputResult.py
