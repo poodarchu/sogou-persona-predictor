@@ -19,6 +19,7 @@ maxQID = 0
 
 UIDs, ages, genders, educations, trainQueryLists, testQueryLists = cut2rtn()
 # testUIDs, testQueryLists = cutTest2Rtn()
+corpora = trainQueryLists + testQueryLists
 
 
 # 当前循环所处理的语料子集，是一个list的list。每个外层list元素对应一个文档
@@ -27,11 +28,11 @@ UIDs, ages, genders, educations, trainQueryLists, testQueryLists = cut2rtn()
 corpus = []
 
 # 保存原始文本，以供人查看
-orig_filename = "train.orig.txt"
+orig_filename = "corpora.orig.txt"
 ORIG = codecs.open(orig_filename, 'w', 'utf-8')
 # 每个 wordsInSentences 对应一个文档
 # 每个 wordsInSentences 由许多句子组成，每个句子是一个list of words
-for queryList in trainQueryLists:
+for queryList in corpora:
     # 统计当前文档的每个词的频率，也就是说，每一篇文档都有一个word-frequency对照表。
     doc_tid2freq = {}
     # 循环取当前文档的一个句子
@@ -71,7 +72,7 @@ ORIG.close()
 print "Training LDA... total %d docs..." %len(corpus)
 startTime = time.time()
 # LDA训练的时候是把train和test放一起训练的(更严格的办法应该是只用train集合来训练)
-lda = gensim.models.ldamodel.LdaModel(corpus=corpus, num_topics=topicNum, passes=2, iterations=1000, alpha=50.0/topicNum, eta=0.1)
+lda = gensim.models.ldamodel.LdaModel(corpus=corpus, num_topics=topicNum, passes=2, iterations=1000, alpha=50.0/topicNum, eta=0.01)
 
 endTime = time.time()
 print "Finished in %.1f seconds" % (endTime - startTime)
@@ -81,15 +82,28 @@ LDA = codecs.open(lda_filename, 'w', 'utf-8')
 print "Saving topic proportions into '%s'..." % lda_filename
 
 # 拿出一个语料子集 (train或者test)
-labels = ages
+# labels = ages
+ageLabels = []
+genderLabels = []
+educationLabels = []
+
+with codecs.open('./data/train.csv', 'r', 'utf-8') as fr:
+    for line in fr.readlines():
+        line = line.split('\t')
+        ageLabels.append(line[1])
+        genderLabels.append(line[2])
+        educationLabels.append(line[3])
+    fr.close()
+
+labels = zip(ageLabels, genderLabels, educationLabels)
 
 # 遍历子集中每个文档
 for d, doc_pairs in enumerate(corpus[:20000]):  # d is index, doc_pairs is the correspond value stored in corpus[d]
-    label = int(labels[d])
-    LDA.write("%d" % label)
+    # label = labels[d]
+    LDA.write("%d %d %d" % (int(ageLabels[d]), int(genderLabels[d]), int(educationLabels[d])) )
 
     # 把当前文档作为输入，用训练好的LDA模型求“doc-topic比例”
-    topic_props = lda.get_document_topics(doc_pairs, minimum_probability=0.001)
+    topic_props = lda.get_document_topics(doc_pairs)
 
     # 把K个比例保存成K个特征，svmlight格式
     for k, prop in topic_props:
@@ -102,8 +116,8 @@ testLDA = codecs.open(test_lda_filename, 'w', 'utf-8')
 print "Saving test topic proportions into '%s'..." % test_lda_filename
 
 for d, doc_pairs in enumerate(corpus[20000:]):
-    label = 0
-    testLDA.write('%d' %label)
+    label = '0 0 0'
+    testLDA.write(label)
 
     # 把当前文档作为输入，用训练好的LDA模型求“doc-topic比例”
     topic_props = lda.get_document_topics(doc_pairs, minimum_probability=0.001)
