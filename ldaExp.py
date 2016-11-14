@@ -6,7 +6,7 @@ from corpusLoader import cut2rtn, cutTest2Rtn
 import codecs
 import numpy as np
 
-topicNum = 150
+topicNum = 200
 
 word2id = {}
 id2word = {}
@@ -72,7 +72,7 @@ ORIG.close()
 print "Training LDA... total %d docs..." %len(corpus)
 startTime = time.time()
 # LDA训练的时候是把train和test放一起训练的(更严格的办法应该是只用train集合来训练)
-lda = gensim.models.ldamodel.LdaModel(corpus=corpus, num_topics=topicNum, passes=2, iterations=1000, alpha=50.0/topicNum, eta=0.01)
+lda = gensim.models.ldamodel.LdaModel(corpus=corpus, num_topics=topicNum, passes=2, iterations=500, update_every=20, minimum_probability=0.001, alpha='auto', eta='auto')
 
 endTime = time.time()
 print "Finished in %.1f seconds" % (endTime - startTime)

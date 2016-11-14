@@ -125,3 +125,8 @@ train.svm-lda-1.txt
 train.svm-lda-2.txt
 
 train.svm-lda.txt
+data/output/
+
+UID_age_gender_education_150.csv
+
+corpora.orig.txt

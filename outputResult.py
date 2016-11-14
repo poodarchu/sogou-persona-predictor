@@ -34,4 +34,3 @@ if __name__ == '__main__':
         for (uid, age, gender, education) in uid_age:
             fw.write('%s %s %d %d\n' % (uid, age, gender, education))
         fw.close()
-
