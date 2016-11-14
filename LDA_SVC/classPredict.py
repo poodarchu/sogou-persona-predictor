@@ -5,3 +5,5 @@ from sklearn.multiclass import  OneVsRestClassifier
 import numpy as np
 import codecs
 
+from sklearn.datasets import make_regression
+

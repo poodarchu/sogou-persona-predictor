@@ -2,7 +2,8 @@
 
 import codecs
 import jieba
-import corenlp
+from sklearn import preprocessing
+
 
 userID = []
 # userTags = [] # userTag[i][0:3] : user i's three tags gender, age and certification

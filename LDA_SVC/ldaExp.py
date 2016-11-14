@@ -68,10 +68,11 @@ for queryList in trainQueryLists:
 
 ORIG.close()
 
-print "Training LDA..."
+print "Training LDA... total %d docs..." %len(corpus)
 startTime = time.time()
 # LDA训练的时候是把train和test放一起训练的(更严格的办法应该是只用train集合来训练)
-lda = gensim.models.ldamodel.LdaModel(corpus=corpus, num_topics=topicNum, passes=2, iterations=1000, alpha=50/topicNum, eta=0.1)
+lda = gensim.models.ldamodel.LdaModel(corpus=corpus, num_topics=topicNum, passes=2, iterations=1000, alpha=50.0/topicNum, eta=0.1)
+
 endTime = time.time()
 print "Finished in %.1f seconds" % (endTime - startTime)
 
@@ -80,23 +81,42 @@ LDA = codecs.open(lda_filename, 'w', 'utf-8')
 print "Saving topic proportions into '%s'..." % lda_filename
 
 # 拿出一个语料子集 (train或者test)
-testLen = len(corpus) - len(ages)
-nanLabels = np.empty((testLen,1))
-labels = ages.extend(nanLabels)
+labels = ages
 
 # 遍历子集中每个文档
-for d, doc_pairs in enumerate(corpus):  # d is index, doc_pairs is the correspond value stored in corpus[d]
+for d, doc_pairs in enumerate(corpus[:20000]):  # d is index, doc_pairs is the correspond value stored in corpus[d]
     label = int(labels[d])
+    LDA.write("%d" % label)
+
     # 把当前文档作为输入，用训练好的LDA模型求“doc-topic比例”
     topic_props = lda.get_document_topics(doc_pairs, minimum_probability=0.001)
-    LDA.write("%d" % label)
+
     # 把K个比例保存成K个特征，svmlight格式
     for k, prop in topic_props:
         LDA.write(" %d:%.3f" % (k, prop))
     LDA.write("\n")
 LDA.close()
 
+test_lda_filename = "test.svm-lda.txt"
+testLDA = codecs.open(test_lda_filename, 'w', 'utf-8')
+print "Saving test topic proportions into '%s'..." % test_lda_filename
+
+for d, doc_pairs in enumerate(corpus[20000:]):
+    label = 0
+    testLDA.write('%d' %label)
+
+    # 把当前文档作为输入，用训练好的LDA模型求“doc-topic比例”
+    topic_props = lda.get_document_topics(doc_pairs, minimum_probability=0.001)
+
+    # 把K个比例保存成K个特征，svmlight格式
+    for k, prop in topic_props:
+        testLDA.write(" %d:%.3f" % (k, prop))
+    testLDA.write("\n")
+testLDA.close()
+
 print "%d docs saved" % len(corpus)
+
+
 
 # print "Now it's turn to process validation set."
 #
